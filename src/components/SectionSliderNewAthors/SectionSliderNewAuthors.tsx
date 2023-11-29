@@ -7,7 +7,7 @@ import MySlider from "components/MySlider";
 export interface SectionSliderNewAuthorsProps {
   className?: string;
   heading: string;
-  subHeading: string;
+  subHeading?: string;
   authors: PostAuthorType[];
   itemPerRow?: number;
 }

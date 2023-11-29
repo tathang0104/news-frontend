@@ -86,9 +86,9 @@ const SectionGridPosts: FC<SectionGridPostsProps> = ({
       <div className={`grid gap-6 md:gap-8 ${gridClass}`}>
         {posts.map((post) => renderCard(post))}
       </div>
-      <div className="flex mt-20 justify-center items-center">
+      {/* <div className="flex mt-20 justify-center items-center">
         <ButtonPrimary loading>Show me more</ButtonPrimary>
-      </div>
+      </div> */}
     </div>
   );
 };

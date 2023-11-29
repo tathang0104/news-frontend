@@ -10,8 +10,6 @@ import Layout from "../layout";
 const IMAGES_GALLERY: string[] = imgHigtQualitys;
 
 const PageSingleGallery = () => {
-  //
-  //
   const router = useNavigate();
   const thisPathname = usePathname();
   const [searchParams] = useSearchParams();

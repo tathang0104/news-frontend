@@ -20,7 +20,7 @@ const Card2: FC<Card2Props> = ({
   size = "normal",
   post,
 }) => {
-  const { title, href, readingTime, featuredImage, categories, postType } =
+  const { title, href, readingTime, featuredImage, categories, postType, desc } =
     post;
 
   return (
@@ -67,9 +67,7 @@ const Card2: FC<Card2Props> = ({
             </Link>
           </h2>
           <span className="block text-neutral-500 dark:text-neutral-400 text-[15px] leading-6 ">
-            Lorem ipsum dolor sit, amet consectetur adipisicing elit. Ratione
-            beatae quasi et, reprehenderit alias veritatis nostrum iste sed
-            laboriosam eveniet possimus.
+            {desc}
           </span>
         </div>
         <div className="my-5 border-t border-neutral-200 dark:border-neutral-700"></div>

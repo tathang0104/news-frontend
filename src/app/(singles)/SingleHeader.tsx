@@ -9,12 +9,18 @@ export interface SingleHeaderProps {
   hiddenDesc?: boolean;
   titleMainClass?: string;
   className?: string;
+  title?: string;
+  desc?: string;
+  post?: any
 }
 
 const SingleHeader: FC<SingleHeaderProps> = ({
   titleMainClass,
   hiddenDesc = false,
   className = "",
+  title,
+  desc,
+  post,
 }) => {
   return (
     <>
@@ -26,18 +32,17 @@ const SingleHeader: FC<SingleHeaderProps> = ({
           />
           <SingleTitle
             mainClass={titleMainClass}
-            title={"Trending web & landing page designs in 2023"}
+            title={title || "title"}
           />
           {!hiddenDesc && (
             <span className="block text-base text-neutral-500 md:text-lg dark:text-neutral-400 pb-1">
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-              Perspiciatis tempora obcaecati error ipsum voluptatibus sed
-              adipisci ut maiores nesciunt quam.
+              {desc}
             </span>
           )}
           <div className="w-full border-b border-neutral-200 dark:border-neutral-700"></div>
           <div className="flex flex-col sm:flex-row justify-between sm:items-end space-y-5 sm:space-y-0 sm:space-x-5">
             <PostMeta2
+              meta={post}
               size="large"
               className="leading-none flex-shrink-0"
               hiddenCategories

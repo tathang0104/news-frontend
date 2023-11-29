@@ -12,9 +12,11 @@ import { ArrowUpIcon } from "@heroicons/react/24/solid";
 
 const demoTags = DEMO_TAGS.filter((_, i) => i < 9);
 
-export interface SingleContentProps {}
+export interface SingleContentProps {
+  post?: any
+}
 
-const SingleContent: FC<SingleContentProps> = () => {
+const SingleContent: FC<SingleContentProps> = ({post}) => {
   const endedAnchorRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef<HTMLButtonElement>(null);
@@ -61,6 +63,11 @@ const SingleContent: FC<SingleContentProps> = () => {
       window?.removeEventListener("scroll", handleProgressIndicatorHeadeEvent);
     };
   }, []);
+  useEffect(() => {
+    if (contentRef.current && post) {
+      contentRef.current.innerHTML = post.content
+    }
+  }, [post]);
 
   const showLikeAndCommentSticky =
     !endedAnchorEntry?.intersectionRatio &&
@@ -75,20 +82,12 @@ const SingleContent: FC<SingleContentProps> = () => {
           className="prose lg:prose-lg !max-w-screen-md mx-auto dark:prose-invert"
           ref={contentRef}
         >
-          <SingleContentDemo />
-        </div>
-
-        {/* TAGS */}
-        <div className="max-w-screen-md mx-auto flex flex-wrap">
-          {demoTags.map((item) => (
-            <Tag hideCount key={item.id} tag={item} className="mr-2 mb-2" />
-          ))}
         </div>
 
         {/* AUTHOR */}
         <div className="max-w-screen-md mx-auto border-b border-t border-neutral-100 dark:border-neutral-700"></div>
         <div className="max-w-screen-md mx-auto ">
-          <SingleAuthor />
+          <SingleAuthor author={post?.author}/>
         </div>
 
         {/* COMMENT FORM */}

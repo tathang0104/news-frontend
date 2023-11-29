@@ -26,14 +26,15 @@ const Avatar: FC<AvatarProps> = ({
   const name = userName || "John Doe";
 
   const [url, setUrl] = useState(imgUrl);
-
   useEffect(() => {
     // FOR DEMO
-    if (!url) {
+    if (!imgUrl) {
       setUrl(_getAvatarRd());
+    } else {
+      setUrl(imgUrl);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [imgUrl]);
 
   return (
     <div

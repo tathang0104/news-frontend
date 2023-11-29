@@ -12,33 +12,37 @@ const postsDemo: PostDataType[] = DEMO_POSTS_AUDIO.filter(
 export interface SectionMagazine8Props {
   posts?: PostDataType[];
   className?: string;
+  heading?: string;
+  subHeading?: string;
 }
 
 const SectionMagazine8: FC<SectionMagazine8Props> = ({
   posts = postsDemo,
   className = "",
+  heading,
+  subHeading
 }) => {
   return (
     <div className={`nc-SectionMagazine8 relative ${className}`}>
       <Heading
-        desc={"Click on music icon and enjoy music or podcast"}
+        desc={subHeading}
         className="mb-14 text-neutral-900 dark:text-neutral-50"
       >
-        Listen to podcasts live
+        {heading}
       </Heading>
       <div className={`grid grid-cols-1 sm:grid-cols-6 gap-6 md:gap-8`}>
-        <Card16Podcast
+        {posts[0] && <Card16Podcast
           className="sm:col-span-3 lg:col-span-2"
           post={posts[0]}
-        />
-        <Card16Podcast
+        />}
+        {posts[1] && <Card16Podcast
           className="sm:col-span-3 lg:col-span-2"
           post={posts[1]}
-        />
+        />}
         <div className="flex flex-col space-y-6 md:space-y-8 sm:col-span-6 lg:col-span-2">
           {posts
-            .filter((_, i) => i > 1 && i < 6)
-            .map((p) => (
+            ?.filter((_, i) => i > 1 && i < 6)
+            ?.map((p) => (
               <Card17Podcast key={p.id} post={p} />
             ))}
         </div>

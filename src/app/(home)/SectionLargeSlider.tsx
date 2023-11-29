@@ -6,6 +6,7 @@ import React, { FC, useState } from "react";
 export interface SectionLargeSliderProps {
   className?: string;
   heading?: string;
+  desc?: string;
   posts: PostDataType[];
 }
 
@@ -13,6 +14,7 @@ const SectionLargeSlider: FC<SectionLargeSliderProps> = ({
   posts,
   heading = "Editor's pick",
   className = "",
+  desc,
 }) => {
   const [indexActive, setIndexActive] = useState(0);
 
@@ -36,7 +38,7 @@ const SectionLargeSlider: FC<SectionLargeSliderProps> = ({
 
   return (
     <div className={`nc-SectionLargeSlider relative ${className}`}>
-      {!!heading && <Heading>{heading}</Heading>}
+      {!!heading && <Heading desc={desc}>{heading}</Heading>}
       {posts.map((item, index) => {
         if (indexActive !== index) return null;
         return (

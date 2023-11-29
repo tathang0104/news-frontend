@@ -8,11 +8,15 @@ import { ArrowRightIcon } from "@heroicons/react/24/solid";
 export interface HeaderFilterProps {
   tabs?: string[];
   heading: string;
+  desc?: string;
+  onChangeTab?: (item: string) => void;
 }
 
 const HeaderFilter: FC<HeaderFilterProps> = ({
   tabs = ["All items", "Garden", "Fitness", "Design"],
   heading = "🎈 Latest Articles",
+  desc,
+  onChangeTab
 }) => {
   const [tabActive, setTabActive] = useState<string>(tabs[0]);
 
@@ -21,11 +25,12 @@ const HeaderFilter: FC<HeaderFilterProps> = ({
       return;
     }
     setTabActive(item);
+    onChangeTab && onChangeTab(item)
   };
 
   return (
     <div className="flex flex-col mb-8 relative">
-      <Heading>{heading}</Heading>
+      <Heading desc={desc}>{heading}</Heading>
       <div className="flex justify-between">
         <Nav
           className="sm:space-x-2"
@@ -41,10 +46,10 @@ const HeaderFilter: FC<HeaderFilterProps> = ({
             </NavItem>
           ))}
         </Nav>
-        <Button className="!hidden md:!flex" pattern="white" sizeClass="px-6">
+        {/* <Button className="!hidden md:!flex" pattern="white" sizeClass="px-6">
           <span>View all</span>
           <ArrowRightIcon className="w-6 h-6 ml-3" />
-        </Button>
+        </Button> */}
       </div>
     </div>
   );

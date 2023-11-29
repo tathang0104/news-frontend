@@ -14,6 +14,7 @@ export interface SectionMagazine9Props {
   className?: string;
   gapClassName?: string;
   heading?: string;
+  subHeading?: string;
 }
 
 const SectionMagazine9: FC<SectionMagazine9Props> = ({
@@ -21,11 +22,12 @@ const SectionMagazine9: FC<SectionMagazine9Props> = ({
   className = "",
   gapClassName = "gap-6 md:gap-8",
   heading = "Listen to audio live",
+  subHeading
 }) => {
   return (
     <div className={`nc-SectionMagazine9 relative ${className}`}>
       {heading && (
-        <Heading desc={"Click on music icon and enjoy music or podcast"}>
+        <Heading desc={subHeading}>
           {heading}
         </Heading>
       )}
@@ -40,8 +42,8 @@ const SectionMagazine9: FC<SectionMagazine9Props> = ({
         className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 ${gapClassName} mt-8`}
       >
         {posts
-          .filter((_, i) => i > 2)
-          .map((p, index) => (
+          ?.filter((_, i) => i > 2)
+          ?.map((p, index) => (
             <Card15Podcast key={index} post={p} />
           ))}
       </div>

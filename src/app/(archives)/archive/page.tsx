@@ -1,32 +1,73 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import ModalCategories from "../ModalCategories";
-import ModalTags from "../ModalTags";
 import { DEMO_POSTS } from "data/posts";
 import { PostDataType } from "data/types";
-import { DEMO_CATEGORIES, DEMO_TAGS } from "data/taxonomies";
-import { DEMO_AUTHORS } from "data/authors";
-import Pagination from "components/Pagination/Pagination";
 import ButtonPrimary from "components/Button/ButtonPrimary";
-import ArchiveFilterListBox from "components/ArchiveFilterListBox/ArchiveFilterListBox";
 import SectionSubscribe2 from "components/SectionSubscribe2/SectionSubscribe2";
 import Card11 from "components/Card11/Card11";
-import BackgroundSection from "components/BackgroundSection/BackgroundSection";
-import SectionGridCategoryBox from "components/SectionGridCategoryBox/SectionGridCategoryBox";
-import ButtonSecondary from "components/Button/ButtonSecondary";
-import SectionSliderNewAuthors from "components/SectionSliderNewAthors/SectionSliderNewAuthors";
 import Image from "components/Image";
+import api from "../../api";
+import { formattedCategory } from "./helper";
 
 // Tag and category have same data type - we will use one demo data
 const posts: PostDataType[] = DEMO_POSTS.filter((_, i) => i < 16);
 
+// interface ICategory {
+//   list: TaxonomyType[];
+//   selected: TaxonomyType | null;
+// }
 const PageArchive = () => {
-  const FILTERS = [
-    { name: "Most Recent" },
-    { name: "Curated by Admin" },
-    { name: "Most Appreciated" },
-    { name: "Most Discussed" },
-    { name: "Most Viewed" },
-  ];
+  const [category, setCategory] = useState<{ list: any[]; selected: any }>({
+    list: [],
+    selected: null,
+  });
+  const [pagination, setPagination] = useState({
+    page: 1,
+    pageSize: 8,
+    total: 0,
+  });
+
+  const getCategory = () => {
+    api
+      .get("categories", {
+        populate: {
+          news: {
+            populate: {
+              author: {
+                populate: {
+                  avatar: {
+                    fields: ["name", "url"],
+                  },
+                },
+              },
+              featuredImage: {
+                fields: ["name", "url"],
+              },
+              galleryImage: {
+                fields: ["name", "url"],
+              },
+              categories: true,
+            },
+          },
+          thumnail: {
+            fields: ["name", "url"],
+          },
+        },
+      })
+      .then((res) => {
+        const { data, meta } = res;
+        const list = formattedCategory(data);
+        const selected = list[0];
+        setCategory({ ...category, list, selected });
+      })
+      .catch((err) => {
+        console.log(err.message);
+      });
+  };
+
+  useEffect(() => {
+    getCategory();
+  }, []);
 
   return (
     <div className={`nc-PageArchive`}>
@@ -36,15 +77,17 @@ const PageArchive = () => {
           <Image
             alt="archive"
             fill
-            src="https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260"
+            src={category?.selected?.thumbnail}
             className="object-cover w-full h-full rounded-3xl md:rounded-[40px]"
             sizes="(max-width: 1280px) 100vw, 1536px"
           />
           <div className="absolute inset-0 bg-black text-white bg-opacity-30 flex flex-col items-center justify-center">
             <h2 className="inline-block align-middle text-5xl font-semibold md:text-7xl ">
-              Garden
+              {category?.selected?.title}
             </h2>
-            <span className="block mt-4 text-neutral-300">115 Articles</span>
+            <span className="block mt-4 text-neutral-300">
+              {category?.selected?.count} Articles
+            </span>
           </div>
         </div>
       </div>
@@ -54,47 +97,28 @@ const PageArchive = () => {
         <div>
           <div className="flex flex-col sm:justify-between sm:flex-row">
             <div className="flex space-x-2.5">
-              <ModalCategories categories={DEMO_CATEGORIES} />
-              <ModalTags tags={DEMO_TAGS} />
+              <ModalCategories
+                categories={category.list}
+                onChangeCate={(idx) => {
+                  setCategory({ ...category, selected: category.list[idx] });
+                }}
+              />
             </div>
             <div className="block my-4 border-b w-full border-neutral-300 dark:border-neutral-500 sm:hidden"></div>
-            <div className="flex justify-end">
-              <ArchiveFilterListBox lists={FILTERS} />
-            </div>
           </div>
 
           {/* LOOP ITEMS */}
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 mt-8 lg:mt-10">
-            {posts.map((post) => (
+            {category?.selected?.news.map((post: any) => (
               <Card11 key={post.id} post={post} />
             ))}
           </div>
 
           {/* PAGINATIONS */}
-          <div className="flex flex-col mt-12 lg:mt-16 space-y-5 sm:space-y-0 sm:space-x-3 sm:flex-row sm:justify-between sm:items-center">
-            <Pagination />
+          {/* <div className="flex flex-col mt-12 lg:mt-16 space-y-5 sm:space-y-0 sm:space-x-3 sm:justify-between sm:items-center">
             <ButtonPrimary>Show me more</ButtonPrimary>
-          </div>
+          </div> */}
         </div>
-
-        {/* MORE SECTIONS */}
-        {/* === SECTION 5 === */}
-        <div className="relative py-16">
-          <BackgroundSection />
-          <SectionGridCategoryBox
-            categories={DEMO_CATEGORIES.filter((_, i) => i < 10)}
-          />
-          <div className="text-center mx-auto mt-10 md:mt-16">
-            <ButtonSecondary loading>Show me more</ButtonSecondary>
-          </div>
-        </div>
-
-        {/* === SECTION 5 === */}
-        <SectionSliderNewAuthors
-          heading="Top elite authors"
-          subHeading="Discover our elite writers"
-          authors={DEMO_AUTHORS.filter((_, i) => i < 10)}
-        />
 
         {/* SUBCRIBES */}
         <SectionSubscribe2 />

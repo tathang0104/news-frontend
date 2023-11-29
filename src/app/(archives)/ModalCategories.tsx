@@ -7,14 +7,24 @@ import { ChevronDownIcon } from "@heroicons/react/24/solid";
 
 export interface ModalCategoriesProps {
   categories: TaxonomyType[];
+  onChangeCate?: (idx: number) => void;
 }
 
-const ModalCategories: FC<ModalCategoriesProps> = ({ categories }) => {
-  const renderModalContent = () => {
+const ModalCategories: FC<ModalCategoriesProps> = ({
+  categories,
+  onChangeCate,
+}) => {
+  const renderModalContent = (closeModal: () => void) => {
     return (
       <div className="grid gap-6 sm:grid-cols-2 sm:py-2 md:gap-8 md:grid-cols-3 lg:grid-cols-4 xl:md:grid-cols-5">
-        {categories.map((cat) => (
-          <CardCategory1 key={cat.id} taxonomy={cat} size="normal" />
+        {categories.map((cat, idx) => (
+          <div
+            onClick={() => {
+              onChangeCate && onChangeCate(idx);
+              closeModal && closeModal();
+            }}>
+            <CardCategory1 key={cat.id} taxonomy={cat} size="normal" />
+          </div>
         ))}
       </div>
     );
@@ -27,8 +37,7 @@ const ModalCategories: FC<ModalCategoriesProps> = ({ categories }) => {
           <Button
             pattern="third"
             fontSize="text-sm font-medium"
-            onClick={openModal}
-          >
+            onClick={openModal}>
             <div>
               <span className="hidden sm:inline">Other</span> Categories
             </div>
@@ -39,7 +48,8 @@ const ModalCategories: FC<ModalCategoriesProps> = ({ categories }) => {
           </Button>
         )}
         modalTitle="Discover other categories"
-        renderContent={renderModalContent}
+        renderContent={(closeModal) => renderModalContent(closeModal)}
+
       />
     </div>
   );

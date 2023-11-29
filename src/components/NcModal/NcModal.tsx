@@ -4,7 +4,7 @@ import Button from "../Button/Button";
 import ButtonClose from "../ButtonClose/ButtonClose";
 
 export interface NcModalProps {
-  renderContent: () => ReactNode;
+  renderContent: (closeModal: () => void) => ReactNode;
   renderTrigger?: (openModal: () => void) => ReactNode;
   contentExtraClass?: string;
   contentPaddingClass?: string;
@@ -103,7 +103,7 @@ const NcModal: FC<NcModalProps> = ({
                     </Dialog.Title>
                   )}
                 </div>
-                <div className={contentPaddingClass}>{renderContent()}</div>
+                <div className={contentPaddingClass}>{renderContent(closeModal)}</div>
               </div>
             </Transition.Child>
           </div>
