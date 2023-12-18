@@ -16,9 +16,15 @@ const api = {
       throw error;
     }
   },
-  post: async (endpoint, params = {}) => {
+  post: async (endpoint, params = {}, token = "") => {
+    console.log(params)
     try {
-      const response = await apiService.post(endpoint, { params });
+      const response = await apiService.post(endpoint, { ...params }, {
+        headers:
+          token && token !== ''
+            ? { Authorization: `Bearer ${token}` }
+            : {},
+      });
       return response.data;
     } catch (error) {
       throw error;
@@ -26,7 +32,7 @@ const api = {
   },
   put: async (endpoint, params = {}) => {
     try {
-      const response = await apiService.put(endpoint, { params });
+      const response = await apiService.put(endpoint, { ...params });
       return response.data;
     } catch (error) {
       throw error;
@@ -34,7 +40,7 @@ const api = {
   },
   delete: async (endpoint, params = {}) => {
     try {
-      const response = await apiService.put(endpoint, { params });
+      const response = await apiService.put(endpoint, { ...params });
       return response.data;
     } catch (error) {
       throw error;

@@ -264,14 +264,6 @@ const PageHome = () => {
       })}
 
       <div className="container ">
-        {/* <SectionMagazine2
-          className="py-16 lg:py-24"
-          heading="Life styles 🎨 "
-          posts={MAGAZINE2_POSTS}
-        /> */}
-
-        {/* <SectionVideos className="py-16 lg:py-28" /> */}
-
         <SectionLatestPosts className="pb-16 lg:pb-28" />
       </div>
     </div>

@@ -49,10 +49,6 @@ const Card9: FC<Card9Props> = ({
     <div
       className={`nc-Card9 relative flex flex-col group rounded-3xl overflow-hidden z-0 ${hoverClass} ${className}`}
     >
-      <div className="absolute inset-x-0 top-0 p-3 flex items-center justify-between transition-all opacity-0 z-[-1] group-hover:opacity-100 group-hover:z-10 duration-300">
-        <PostCardLikeAndComment className="relative" />
-        <PostCardSaveAction hidenReadingTime className="relative" />
-      </div>
       <div className={`flex items-start relative w-full ${ratio}`}></div>
       {postType === "audio" ? (
         <div className="absolute inset-0">

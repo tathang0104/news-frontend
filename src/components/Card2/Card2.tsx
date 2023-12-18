@@ -71,10 +71,6 @@ const Card2: FC<Card2Props> = ({
           </span>
         </div>
         <div className="my-5 border-t border-neutral-200 dark:border-neutral-700"></div>
-        <div className="flex items-center justify-between">
-          <PostCardLikeAndComment className="relative" />
-          <PostCardSaveAction className="relative" readingTime={readingTime} />
-        </div>
       </div>
     </div>
   );

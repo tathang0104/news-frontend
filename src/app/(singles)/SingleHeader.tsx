@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import React, { Dispatch, FC } from "react";
 import CategoryBadgeList from "components/CategoryBadgeList/CategoryBadgeList";
 import SingleTitle from "./SingleTitle";
 import PostMeta2 from "components/PostMeta2/PostMeta2";
@@ -6,6 +6,7 @@ import SingleMetaAction2 from "./SingleMetaAction2";
 import { DEMO_CATEGORIES } from "data/taxonomies";
 
 export interface SingleHeaderProps {
+  onSetState?: React.Dispatch<React.SetStateAction<any>>
   hiddenDesc?: boolean;
   titleMainClass?: string;
   className?: string;
@@ -21,6 +22,7 @@ const SingleHeader: FC<SingleHeaderProps> = ({
   title,
   desc,
   post,
+  onSetState,
 }) => {
   return (
     <>
@@ -48,7 +50,7 @@ const SingleHeader: FC<SingleHeaderProps> = ({
               hiddenCategories
               avatarRounded="rounded-full shadow-inner"
             />
-            <SingleMetaAction2 />
+            <SingleMetaAction2 post={post} onSetState={onSetState}/>
           </div>
         </div>
       </div>

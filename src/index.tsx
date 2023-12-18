@@ -4,13 +4,16 @@ import "./index.css";
 import "./styles/index.scss";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
+import { AdminProvider } from "context/adminContext";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
 root.render(
   <React.StrictMode>
-    <App />
+    <AdminProvider>
+      <App />
+    </AdminProvider>
   </React.StrictMode>
 );
 

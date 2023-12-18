@@ -129,7 +129,7 @@ const PageSingle = () => {
               hiddenCategories
               avatarRounded="rounded-full shadow-inner"
             />
-            <SingleMetaAction2 />
+            <SingleMetaAction2 post={pageData}/>
           </div>
         </div>
       </div>
@@ -143,6 +143,7 @@ const PageSingle = () => {
 
     router(`${thisPathname}/?${params.toString()}`);
   };
+
   const handleOpenModalImageGallery = () => {
     router(`${thisPathname}/?modal=PHOTO_TOUR_SCROLLABLE`);
   };
@@ -209,8 +210,7 @@ const PageSingle = () => {
       .then((res) => {
         const { data } = res;
         const news = formatDataNews(data);
-        console.log(news[0]);
-        setPageData(news[0]);
+        setPageData({...news[0], id: data[0].id});
       });
   }, [slug]);
 
@@ -229,6 +229,7 @@ const PageSingle = () => {
             <header className="container rounded-xl">
               <div className="max-w-screen-md mx-auto">
                 <SingleHeader
+                  onSetState={setPageData}
                   title={pageData?.title}
                   desc={pageData?.desc}
                   post={pageData}
@@ -278,7 +279,7 @@ const PageSingle = () => {
                   <span className="hidden lg:block text-lg text-neutral-500 dark:text-neutral-400">
                     {pageData?.desc}
                   </span>
-                  <SingleMetaAction2 />
+                  <SingleMetaAction2 post={pageData}/>
                 </div>
               </div>
             </header>

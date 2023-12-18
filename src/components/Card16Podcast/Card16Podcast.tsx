@@ -84,10 +84,6 @@ const Card16Podcast: FC<Card16PodcastProps> = ({
           <span className="block text-sm text-neutral-500 dark:text-neutral-400 mt-3 mb-5">
             <span className="line-clamp-2">{desc}</span>
           </span>
-          <div className="flex items-end justify-between mt-auto">
-            <PostCardLikeAndComment className="relative" />
-            <PostCardSaveAction className="relative" />
-          </div>
         </div>
       </div>
     </div>

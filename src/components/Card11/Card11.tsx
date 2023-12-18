@@ -54,10 +54,6 @@ const Card11: FC<Card11Props> = ({
             {title}
           </span>
         </h3>
-        <div className="flex items-end justify-between mt-auto">
-          <PostCardLikeAndComment className="relative" />
-          <PostCardSaveAction className="relative" />
-        </div>
       </div>
     </div>
   );
