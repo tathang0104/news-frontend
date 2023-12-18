@@ -3,11 +3,14 @@ import React, { FC, useState } from "react";
 export interface NcBookmarkProps {
   containerClassName?: string;
   bookmarked?: boolean;
+  post?: any;
+  handleBookmark?: () => void;
 }
 
 const NcBookmark: FC<NcBookmarkProps> = ({
   containerClassName = "h-8 w-8 bg-neutral-50 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700",
   bookmarked = false,
+  handleBookmark
 }) => {
   const [isBookmarked, setIsBookmarked] = useState(bookmarked);
 
@@ -15,7 +18,10 @@ const NcBookmark: FC<NcBookmarkProps> = ({
     <button
       className={`nc-NcBookmark relative rounded-full flex items-center justify-center ${containerClassName}`}
       title="Save to reading list"
-      onClick={() => setIsBookmarked(!isBookmarked)}
+      onClick={() => {
+        setIsBookmarked(!isBookmarked)
+        handleBookmark && handleBookmark()
+      }}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

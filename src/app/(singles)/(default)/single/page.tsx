@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import NcImage from "components/NcImage/NcImage";
 import SingleHeader from "app/(singles)/SingleHeader";
 import Layout from "../layout";
@@ -18,13 +18,14 @@ import CategoryBadgeList from "components/CategoryBadgeList/CategoryBadgeList";
 import PostMeta2 from "components/PostMeta2/PostMeta2";
 import usePathname from "hooks/usePathname";
 import ListingImageGallery from "components/listing-image-gallery/ListingImageGallery";
+import { AdminContext } from "context/adminContext";
 
 const PageSingle = () => {
   const { slug } = useParams();
   const [isPlay, setIsPlay] = useState(false);
   const [isRendered, setIsRendered] = useState(false);
   const [pageData, setPageData] = useState<any>();
-  
+  const { user } = useContext(AdminContext);
   const router = useNavigate();
   const thisPathname = usePathname();
   const [searchParams] = useSearchParams();
@@ -95,11 +96,7 @@ const PageSingle = () => {
             width="100%"
             height="100%"
             controls
-            light={
-              isSafariBrowser()
-                ? false
-                : pageData?.featuredImage
-            }
+            light={isSafariBrowser() ? false : pageData?.featuredImage}
             playIcon={<NcPlayIcon />}
           />
         )}
@@ -129,14 +126,13 @@ const PageSingle = () => {
               hiddenCategories
               avatarRounded="rounded-full shadow-inner"
             />
-            <SingleMetaAction2 post={pageData}/>
+            <SingleMetaAction2 post={pageData} />
           </div>
         </div>
       </div>
     );
   };
 
-  
   const handleCloseModalImageGallery = () => {
     let params = new URLSearchParams(document.location.search);
     params.delete("modal");
@@ -150,67 +146,71 @@ const PageSingle = () => {
 
   useEffect(() => {
     api
-      .get("news", {
-        populate: {
-          featuredImage: {
-            fields: ["name", "url"],
-          },
-          galleryImage: {
-            fields: ["name", "url"],
-          },
-          author: {
-            populate: {
-              avatar: {
-                fields: ["name", "url"],
-              },
-              news: {
-                populate: {
-                  featuredImage: {
-                    fields: ["name", "url"],
-                  },
-                  galleryImage: {
-                    fields: ["name", "url"],
-                  },
-                  author: {
-                    populate: {
-                      avatar: {
-                        fields: ["name", "url"],
+      .get(
+        "news",
+        {
+          populate: {
+            featuredImage: {
+              fields: ["name", "url"],
+            },
+            galleryImage: {
+              fields: ["name", "url"],
+            },
+            author: {
+              populate: {
+                avatar: {
+                  fields: ["name", "url"],
+                },
+                news: {
+                  populate: {
+                    featuredImage: {
+                      fields: ["name", "url"],
+                    },
+                    galleryImage: {
+                      fields: ["name", "url"],
+                    },
+                    author: {
+                      populate: {
+                        avatar: {
+                          fields: ["name", "url"],
+                        },
                       },
                     },
-                  },
-                  categories: "*",
-                },
-              },
-            },
-          },
-          categories: "*",
-          relatedNews: {
-            populate: {
-              featuredImage: {
-                fields: ["name", "url"],
-              },
-              galleryImage: {
-                fields: ["name", "url"],
-              },
-              author: {
-                populate: {
-                  avatar: {
-                    fields: ["name", "url"],
+                    categories: "*",
                   },
                 },
               },
-              categories: "*",
+            },
+            categories: "*",
+            relatedNews: {
+              populate: {
+                featuredImage: {
+                  fields: ["name", "url"],
+                },
+                galleryImage: {
+                  fields: ["name", "url"],
+                },
+                author: {
+                  populate: {
+                    avatar: {
+                      fields: ["name", "url"],
+                    },
+                  },
+                },
+                categories: "*",
+              },
             },
           },
+          filters: {
+            slug,
+          },
         },
-        filters: {
-          slug,
-        },
-      })
+        user?.jwt
+      )
       .then((res) => {
         const { data } = res;
         const news = formatDataNews(data);
-        setPageData({...news[0], id: data[0].id});
+        setPageData({ ...news[0], id: data[0].id });
       });
   }, [slug]);
 
@@ -219,6 +219,8 @@ const PageSingle = () => {
       setIsRendered(true);
     }
   }, [pageData]);
+
+  console.log(pageData);
 
   if (pageData) {
     let component;
@@ -279,7 +281,7 @@ const PageSingle = () => {
                   <span className="hidden lg:block text-lg text-neutral-500 dark:text-neutral-400">
                     {pageData?.desc}
                   </span>
-                  <SingleMetaAction2 post={pageData}/>
+                  <SingleMetaAction2 post={pageData} />
                 </div>
               </div>
             </header>
@@ -304,84 +306,85 @@ const PageSingle = () => {
       case "gallery":
         component = (
           <div className={`pt-8 lg:pt-16`}>
-          {/* SINGLE HEADER */}
-          <header className="container rounded-xl">
-            <SingleHeader hiddenDesc title={pageData?.title} desc={pageData?.desc} post={pageData}/>
-            <div className="relative grid grid-cols-3 sm:grid-cols-4 gap-2 my-10">
-              <div
-                className="col-span-2 row-span-2 relative rounded-xl overflow-hidden cursor-pointer z-0"
-                onClick={handleOpenModalImageGallery}
-              >
-                <NcImage
-                  alt="single"
-                  containerClassName="absolute inset-0"
-                  className="object-cover w-full h-full rounded-xl"
-                  fill
-                  src={pageData?.galleryImgs[0]}
-                />
-                <div className="absolute inset-0 bg-neutral-900 bg-opacity-20 opacity-0 hover:opacity-100 transition-opacity"></div>
-              </div>
-              {pageData?.galleryImgs.filter((_: any, i: number) => i >= 1 && i < 5).map(
-                (item: any, index: number) => (
-                  <div
-                    key={index}
-                    className={`relative rounded-xl overflow-hidden z-0 ${
-                      index >= 2 ? "hidden sm:block" : ""
-                    }`}
-                  >
-                    <NcImage
-                      alt="single"
-                      fill
-                      containerClassName="aspect-w-6 aspect-h-5"
-                      className="object-cover w-full h-full rounded-xl"
-                      src={item || ""}
-                    />
-  
-                    {/* OVERLAY */}
-                    <div
-                      className="absolute inset-0 bg-neutral-900 bg-opacity-20 opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
-                      onClick={handleOpenModalImageGallery}
-                    />
-                  </div>
-                )
-              )}
-  
-              <div
-                className="absolute hidden md:flex md:items-center md:justify-center right-3 bottom-3 px-4 py-2 rounded-full bg-neutral-100 text-neutral-500 cursor-pointer hover:bg-neutral-200 z-10"
-                onClick={handleOpenModalImageGallery}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+            {/* SINGLE HEADER */}
+            <header className="container rounded-xl">
+              <SingleHeader
+                hiddenDesc
+                title={pageData?.title}
+                desc={pageData?.desc}
+                post={pageData}
+              />
+              <div className="relative grid grid-cols-3 sm:grid-cols-4 gap-2 my-10">
+                <div
+                  className="col-span-2 row-span-2 relative rounded-xl overflow-hidden cursor-pointer z-0"
+                  onClick={handleOpenModalImageGallery}>
+                  <NcImage
+                    alt="single"
+                    containerClassName="absolute inset-0"
+                    className="object-cover w-full h-full rounded-xl"
+                    fill
+                    src={pageData?.galleryImgs[0]}
                   />
-                </svg>
-                <span className="ml-2 text-neutral-800 text-sm font-medium">
-                  Show all photos
-                </span>
+                  <div className="absolute inset-0 bg-neutral-900 bg-opacity-20 opacity-0 hover:opacity-100 transition-opacity"></div>
+                </div>
+                {pageData?.galleryImgs
+                  .filter((_: any, i: number) => i >= 1 && i < 5)
+                  .map((item: any, index: number) => (
+                    <div
+                      key={index}
+                      className={`relative rounded-xl overflow-hidden z-0 ${
+                        index >= 2 ? "hidden sm:block" : ""
+                      }`}>
+                      <NcImage
+                        alt="single"
+                        fill
+                        containerClassName="aspect-w-6 aspect-h-5"
+                        className="object-cover w-full h-full rounded-xl"
+                        src={item || ""}
+                      />
+
+                      {/* OVERLAY */}
+                      <div
+                        className="absolute inset-0 bg-neutral-900 bg-opacity-20 opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
+                        onClick={handleOpenModalImageGallery}
+                      />
+                    </div>
+                  ))}
+
+                <div
+                  className="absolute hidden md:flex md:items-center md:justify-center right-3 bottom-3 px-4 py-2 rounded-full bg-neutral-100 text-neutral-500 cursor-pointer hover:bg-neutral-200 z-10"
+                  onClick={handleOpenModalImageGallery}>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                    />
+                  </svg>
+                  <span className="ml-2 text-neutral-800 text-sm font-medium">
+                    Show all photos
+                  </span>
+                </div>
               </div>
-            </div>
-          </header>
-  
-          <ListingImageGallery
-            isShowModal={modal === "PHOTO_TOUR_SCROLLABLE"}
-            onClose={handleCloseModalImageGallery}
-            images={pageData?.galleryImgs.map((item: any, index: number) => {
-              return {
-                id: index,
-                url: item,
-              };
-            })}
-          />
-        </div>
+            </header>
+
+            <ListingImageGallery
+              isShowModal={modal === "PHOTO_TOUR_SCROLLABLE"}
+              onClose={handleCloseModalImageGallery}
+              images={pageData?.galleryImgs.map((item: any, index: number) => {
+                return {
+                  id: index,
+                  url: item,
+                };
+              })}
+            />
+          </div>
         );
         break;
       default:

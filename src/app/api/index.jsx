@@ -8,9 +8,14 @@ const apiService = axios.create({
 });
 
 const api = {
-  get: async (endpoint, params = {}) => {
+  get: async (endpoint, params = {}, token = "") => {
     try {
-      const response = await apiService.get(endpoint, { params });
+      const response = await apiService.get(endpoint, {
+        params: params, headers:
+          token && token !== ''
+            ? { Authorization: `Bearer ${token}` }
+            : {},
+      });
       return response.data;
     } catch (error) {
       throw error;

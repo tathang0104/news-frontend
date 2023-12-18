@@ -8,6 +8,7 @@ export interface PostCardLikeAndCommentProps {
   hiddenCommentOnMobile?: boolean;
   useOnSinglePage?: boolean;
   handleLike?: () => void;
+  post?: any
 }
 
 const PostCardLikeAndComment: FC<PostCardLikeAndCommentProps> = ({
@@ -15,13 +16,15 @@ const PostCardLikeAndComment: FC<PostCardLikeAndCommentProps> = ({
   itemClass = "px-3 h-8 text-xs",
   hiddenCommentOnMobile = true,
   useOnSinglePage = false,
-  handleLike
+  handleLike,
+  post,
 }) => {
+  console.log(post?.like)
   return (
     <div
       className={`nc-PostCardLikeAndComment flex items-center space-x-2 ${className}`}
     >
-      <PostCardLikeAction className={itemClass} handleLike={() => {
+      <PostCardLikeAction className={itemClass} liked={post?.like?.isLiked} likeCount={post?.like?.count} handleLike={() => {
         handleLike && handleLike()
       }} />
       <PostCardCommentBtn

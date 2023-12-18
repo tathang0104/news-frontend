@@ -8,14 +8,11 @@ import Card11 from "components/Card11/Card11";
 import Image from "components/Image";
 import api from "../../api";
 import { formattedCategory } from "./helper";
+import { useParams } from "react-router-dom";
 
 // Tag and category have same data type - we will use one demo data
 const posts: PostDataType[] = DEMO_POSTS.filter((_, i) => i < 16);
 
-// interface ICategory {
-//   list: TaxonomyType[];
-//   selected: TaxonomyType | null;
-// }
 const PageArchive = () => {
   const [category, setCategory] = useState<{ list: any[]; selected: any }>({
     list: [],
@@ -26,6 +23,7 @@ const PageArchive = () => {
     pageSize: 8,
     total: 0,
   });
+  const {slug} = useParams()
 
   const getCategory = () => {
     api
@@ -57,7 +55,8 @@ const PageArchive = () => {
       .then((res) => {
         const { data, meta } = res;
         const list = formattedCategory(data);
-        const selected = list[0];
+        const idx = list.findIndex((item) => item.slug === slug);
+        const selected = list[idx > 0 ? idx : 0];
         setCategory({ ...category, list, selected });
       })
       .catch((err) => {
@@ -68,6 +67,14 @@ const PageArchive = () => {
   useEffect(() => {
     getCategory();
   }, []);
+
+  useEffect(() => {
+    if (category.list.length > 0) {
+      const idx = category.list.findIndex((item) => item.slug === slug);
+      const selected = category.list[idx > 0 ? idx : 0];
+      setCategory({...category, selected})
+    }
+  }, [slug])
 
   return (
     <div className={`nc-PageArchive`}>

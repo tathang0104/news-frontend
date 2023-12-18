@@ -20,7 +20,9 @@ export const pages: Page[] = [
   { path: "/", component: PageHome },
 
   // archives page -------------------------------------------------------
+  { path: "/archive/", component: PageArchive },
   { path: "/archive/:slug", component: PageArchive },
+  { path: "/author/", component: PageAuthor },
   { path: "/author/:slug", component: PageAuthor },
 
   // single page -------------------------------------------------------

@@ -37,7 +37,7 @@ export const formatDataNews = (data: any[]) => {
                 id,
                 ...attributes,
                 name: attributes.title,
-                href: attributes.slug,
+                href: "/archive/" + attributes.slug,
                 color: attributes.bgColor,
             }
         })
