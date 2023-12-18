@@ -51,6 +51,35 @@ const api = {
       throw error;
     }
   },
+  postComment: async (apiName = '', articleId, dataSend, token = "") => {
+    const url = process.env.REACT_APP_BE_URL_API + `comments/${apiName}:${articleId}`
+    const data = {
+      content: dataSend.content,
+      threadOf: dataSend.threadOf
+    }
+    return await axios.request({
+      method: 'POST',
+      url,
+      headers:
+        token && token !== ''
+          ? { Authorization: `Bearer ${token}` }
+          : {},
+      data: {
+        ...data,
+        ...(!token || token === '')
+          ? {
+            author: {
+              id: dataSend.authorId,
+              name: dataSend.username,
+              email: dataSend.email,
+              avatar: dataSend.avatar || '/logo512.png',
+            },
+          }
+          : {}
+      }
+    })
+  }
+
 }
 
 export default api;
