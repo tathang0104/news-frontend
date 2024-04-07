@@ -37,6 +37,9 @@ const PageLogin = () => {
               })
               .then((res) => {
                 const { user, jwt } = res;
+                console.log(user, jwt, res)
+                localStorage.setItem("user", user);
+                localStorage.setItem("authToken", jwt);
                 setUser({ ...user, jwt });
                 navigate("/");
               })

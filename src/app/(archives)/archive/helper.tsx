@@ -44,16 +44,17 @@ export const formatDataNews = (data: any[]) => {
     }
     return {
       ...attributes,
+      id,
       featuredImage:
-        process.env.REACT_APP_BE_URL + featuredImage.attributes?.url,
-      author: {
+        process.env.REACT_APP_BE_URL + featuredImage?.attributes?.url,
+      author: author ? {
         id: author.id,
         ...author.attributes,
         avatar: author.attributes?.avatarUrl,
         href: "/author/" + author.attributes?.slug
-      },
+      }: null,
       date: moment(attributes.createdAt).format("MMMM DD, YYYY"),
-      categories: formatCate(categories),
+      categories: categories.length > 0 ? formatCate(categories) : [],
       galleryImgs: galleryImgs,
       postType: type,
       href: `/single${type !== "standard" ? `-${type}` : "" }/${newSlug}`,

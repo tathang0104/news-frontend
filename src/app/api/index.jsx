@@ -22,7 +22,6 @@ const api = {
     }
   },
   post: async (endpoint, params = {}, token = "") => {
-    console.log(params)
     try {
       const response = await apiService.post(endpoint, { ...params }, {
         headers:
@@ -78,8 +77,43 @@ const api = {
           : {}
       }
     })
-  }
+  },
 
+  uploadImage: async (image, cancelToken) => {
+    const localToken =
+      localStorage.getItem('authToken')
+    const formData = new FormData()
+    formData.append('files', image)
+
+    return await axios.request({
+      url: process.env.REACT_APP_BE_URL_API + 'upload',
+      method: 'POST',
+      headers:
+        localToken && localToken !== ''
+          ? { Authorization: `Bearer ${localToken}` }
+          : {},
+      data: formData,
+      ...(cancelToken ? { cancelToken } : {}),
+    })
+  },
+  uploadMultiImage: async (images) => {
+    const localToken =
+      localStorage.getItem('authToken')
+    const formData = new FormData()
+    for (let i = 0; i < images.length; i++) {
+      formData.append('files', images[i])
+    }
+
+    return await axios.request({
+      url: process.env.REACT_APP_BE_URL_API + 'upload',
+      method: 'POST',
+      headers:
+        localToken && localToken !== ''
+          ? { Authorization: `Bearer ${localToken}` }
+          : {},
+      data: formData,
+    })
+  },
 }
 
 export default api;
@@ -87,3 +121,16 @@ export default api;
 export const createQuery = (queryObj = {}) => {
   return qs.stringify(queryObj, { encodeValuesOnly: true });
 };
+
+export const generateSlug = (name) => {
+  return name
+    .toLowerCase() // Chuyển đổi tất cả thành chữ thường
+    .normalize('NFD') // Chuẩn hóa chuỗi Unicode
+    .replace(/[\u0300-\u036f]/g, '') // Loại bỏ các ký tự có dấu
+    .replace(/\s+/g, '-') // Thay thế khoảng trắng bằng dấu gạch ngang
+    .replace(/đ/g, 'd') // Thay thế ký tự đặc biệt dạng "đ" thành "d"
+    .replace(/[^\w\\-]+/, '') // Loại bỏ các ký tự không phải chữ cái, số hoặc gạch ngang
+    .replace(/\\-\\-+/, '-') // Loại bỏ nhiều hơn một dấu gạch ngang liên tiếp
+    .replace(/^-+/, '') // Loại bỏ các dấu gạch ngang ở đầu chuỗi
+    .replace(/-+$/, '') // Loại bỏ các dấu gạch ngang ở cuối chuỗi
+}

@@ -7,9 +7,6 @@ import PageHome from "app/(home)/page";
 import PageArchive from "app/(archives)/archive/page";
 import PageAuthor from "app/author/page";
 import PageSingle from "app/(singles)/(default)/single/page";
-import PageSingleGallery from "app/(singles)/(default)/single-gallery/page";
-import PageSingleAudio from "app/(singles)/(default)/single-audio/page";
-import PageSingleVideo from "app/(singles)/(default)/single-video/page";
 import PageSearch from "app/(search)/search/page";
 import Page404 from "app/not-found";
 import PageLogin from "app/(others)/login/page";
@@ -24,6 +21,9 @@ export const pages: Page[] = [
   { path: "/archive/:slug", component: PageArchive },
   { path: "/author/", component: PageAuthor },
   { path: "/author/:slug", component: PageAuthor },
+  { path: "/author/:slug/saved", component: PageAuthor },
+  { path: "/author/:slug/create-news", component: PageAuthor },
+  { path: "/author/:slug/news/:id", component: PageAuthor },
 
   // single page -------------------------------------------------------
   { path: "/single/:slug", component: PageSingle },

@@ -1,45 +1,88 @@
-import React, { useEffect, useState } from "react";
-import { DEMO_POSTS } from "data/posts";
+import React, { Fragment, useContext, useEffect, useState } from "react";
 import { PostDataType } from "data/types";
-import Pagination from "components/Pagination/Pagination";
-import ButtonPrimary from "components/Button/ButtonPrimary";
-import { DEMO_AUTHORS } from "data/authors";
-import { DEMO_CATEGORIES } from "data/taxonomies";
 import Nav from "components/Nav/Nav";
 import NavItem from "components/NavItem/NavItem";
 import SocialsList from "components/SocialsList/SocialsList";
-import ArchiveFilterListBox from "components/ArchiveFilterListBox/ArchiveFilterListBox";
 import SectionSubscribe2 from "components/SectionSubscribe2/SectionSubscribe2";
 import Card11 from "components/Card11/Card11";
 import SectionSliderNewAuthors from "components/SectionSliderNewAthors/SectionSliderNewAuthors";
 import NcImage from "components/NcImage/NcImage";
-import { GlobeAltIcon, ShareIcon } from "@heroicons/react/24/outline";
-import { avatarImgs } from "contains/fakeData";
+import { GlobeAltIcon } from "@heroicons/react/24/outline";
 import VerifyIcon from "components/VerifyIcon";
-import FollowButton from "components/FollowButton";
-import NcDropDown from "components/NcDropDown/NcDropDown";
-import { SOCIALS_DATA } from "components/SocialsShare/SocialsShare";
-import AccountActionDropdown from "components/AccountActionDropdown/AccountActionDropdown";
 import Image from "components/Image";
-import { useParams } from "react-router-dom";
-import api from "app/api";
+import { useNavigate, useParams } from "react-router-dom";
+import api, { generateSlug } from "app/api";
+import { AdminContext } from "context/adminContext";
+import FormInputMedia from "components/FormInputMedia";
+import Dropdown from "components/Dropdown";
+import { formatDataNews } from "app/(archives)/archive/helper";
+import { CKEditor } from "@ckeditor/ckeditor5-react";
+import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 
-const posts: PostDataType[] = DEMO_POSTS.filter((_, i) => i < 12);
-const FILTERS = [
-  { name: "Most Recent" },
-  { name: "Curated by Admin" },
-  { name: "Most Appreciated" },
-  { name: "Most Discussed" },
-  { name: "Most Viewed" },
-];
-const TABS = ["Articles", "Favorites", "Saved"];
 
+interface IForm {
+  title: string;
+  slug: string;
+  desc: string;
+  videoUrl: string;
+  audioUrl: string;
+  featuredImage?: {
+    id: number;
+    url: string;
+    name: string;
+  };
+  galleryImage: any[];
+  type: string;
+  content: string;
+}
 const PageAuthor = () => {
-  const { slug } = useParams();
-  const [tabActive, setTabActive] = useState<string>(TABS[0]);
+  const { user } = useContext(AdminContext);
+  const { slug, id } = useParams();
+  const navigate = useNavigate();
+  const initForm = {
+    title: "",
+    slug: "",
+    desc: "",
+    videoUrl: "",
+    audioUrl: "",
+    featuredImage: undefined,
+    galleryImage: [],
+    type: "standard",
+    content: "",
+  }
+  const [form, setForm] = useState<IForm>(initForm);
+  const TAB1 = [
+    {
+      name: "Articles",
+      handle: () => navigate(`/author/${slug}`),
+    },
+    {
+      name: "Create News",
+      handle: () => {
+        setForm(initForm)
+        navigate(`/author/${slug}/create-news`)
+      },
+    },
+  ];
+  const TAB2 = [
+    {
+      name: "Articles",
+      handle: () => navigate(`/author/${slug}`),
+    },
+  ];
+  const TABS = user?.username === slug ? TAB1 : TAB2;
+  const [tabActive, setTabActive] = useState<string>(TABS[0].name);
   const [pageData, setPageData] = useState<any>();
   const [authors, setAuthors] = useState<any[]>([]);
 
+  const handleDeleteImage = (idx: number) => {
+    const images = [...form.galleryImage];
+    if (idx >= 0 && idx < images.length) {
+      const newImages = images.filter((item, i) => i !== idx);
+      setForm((preState) => ({ ...preState, galleryImage: newImages }));
+    }
+  };
+  console.log(slug === user?.username);
 
   useEffect(() => {
     api
@@ -121,10 +164,12 @@ const PageAuthor = () => {
             };
           }
         );
-        console.log(dataAuthor[0]);
-        setPageData(dataAuthor[0]);
+        const [author] = dataAuthor;
+        const news = formatDataNews(author.news.data);
+        console.log(news);
+        setPageData({ ...author, news });
       });
-  }, [slug]);
+  }, [slug, id]);
 
   useEffect(() => {
     api
@@ -137,8 +182,8 @@ const PageAuthor = () => {
             fields: ["name", "url"],
           },
           news: {
-            fields: ["id"]
-          }
+            fields: ["id"],
+          },
         },
         pagination: {
           page: 1,
@@ -147,7 +192,7 @@ const PageAuthor = () => {
       })
       .then((res) => {
         const { data } = res;
-        
+
         const dataAuthor = data.map(
           ({ id, attributes }: { id: number; attributes: any }) => {
             return {
@@ -164,18 +209,56 @@ const PageAuthor = () => {
             };
           }
         );
-        console.log(dataAuthor)
-        setAuthors(dataAuthor)
+        setAuthors(dataAuthor);
       });
   }, []);
 
-  const handleClickTab = (item: string) => {
+  useEffect(() => {
+    if (id) {
+      api
+        .get(`/news/${id}`, {
+          populate: {
+            featuredImage: "*",
+            galleryImage: "*",
+            author: "*",
+            categories: "*",
+          },
+        })
+        .then((res) => {
+          const { data } = res;
+          const { attributes } = data;
+          setForm({
+            audioUrl: attributes.audioUrl,
+            videoUrl: attributes.videoUrl,
+            desc: attributes.desc,
+            content: attributes.content,
+            slug: attributes.slug,
+            title: attributes.title,
+            type: attributes.type,
+            galleryImage:
+              attributes.galleryImage.data.map((item: any) => ({
+                id: item.id,
+                url: item.attributes.url,
+                name: item.attributes.name,
+              })) || [],
+            featuredImage: attributes.featuredImage.data?.attributes,
+          });
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
+  }, [id]);
+  const handleClickTab = (item: any) => {
     if (item === tabActive) {
       return;
     }
-    setTabActive(item);
+    item.handle && item.handle();
+    setTabActive(item.name);
   };
 
+  if (!pageData) return <></>;
+  console.log(pageData.news);
   return (
     <div className={`nc-PageAuthor `}>
       {/* HEADER */}
@@ -240,39 +323,348 @@ const PageAuthor = () => {
               {TABS.map((item, index) => (
                 <NavItem
                   key={index}
-                  isActive={tabActive === item}
+                  isActive={tabActive === item.name}
                   onClick={() => handleClickTab(item)}>
-                  {item}
+                  {item.name}
                 </NavItem>
               ))}
             </Nav>
             <div className="block my-4 border-b w-full border-neutral-300 dark:border-neutral-500 sm:hidden"></div>
           </div>
 
-          {/* LOOP ITEMS */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 mt-8 lg:mt-10">
-            {posts.map((post) => (
-              <Card11 key={post.id} post={post} />
-            ))}
-          </div>
-
-          {/* PAGINATION */}
-          {/* <div className="flex flex-col mt-12 lg:mt-16 space-y-5 sm:space-y-0 sm:space-x-3 sm:flex-row sm:justify-between sm:items-center">
-            <Pagination />
-            <ButtonPrimary>Show me more</ButtonPrimary>
-          </div> */}
+          {tabActive === "Create News" || id ? (
+            <div className="mt-10">
+              <h1 className="text-3xl font-extrabold">
+                Let Create your own post
+              </h1>
+              <p className="text-sm text-gray-400 mt-3">
+                Have some big idea or brand to develop and need help? Then reach
+                out we'd love to hear about your project and provide help.
+              </p>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (id) {
+                    api.put(`/news/${id}`, {
+                      data: {
+                        ...form,
+                      },
+                    })
+                  } else {
+                    api
+                      .post("news", {
+                        data: {
+                          ...form,
+                          slug: generateSlug(form.title),
+                          author: {
+                            connect: [pageData.id],
+                          },
+                        },
+                      })
+                      .then((res) => {
+                        const { data } = res;
+                        navigate(`/author/${slug}/news/${data.id}`);
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                      });
+                  }
+                }}
+                className="ml-auo space-y-4 mt-4">
+                <input
+                  type="text"
+                  name="title"
+                  placeholder="Title"
+                  value={form.title}
+                  onChange={(e) => {
+                    setForm((preState) => ({
+                      ...preState,
+                      title: e.target.value,
+                    }));
+                  }}
+                  className="w-full rounded-md py-2.5 px-4 border text-sm outline-[#007bff]"
+                />
+                <FormInputMedia
+                  required
+                  buttonLabel="Upload Feature Images"
+                  accept="image/*"
+                  onChange={(val) => {
+                    setForm((preState) => ({
+                      ...preState,
+                      featuredImage: val,
+                    }));
+                  }}
+                />
+                {form.featuredImage && (
+                  <div className="relative h-[144px] w-[130px] rounded-md first:col-span-2 first:row-span-2 first:h-[293px] first:w-[265px]">
+                    <img
+                      src={
+                        process.env.REACT_APP_BE_URL + form.featuredImage?.url
+                      }
+                      alt=""
+                      className="h-full w-full object-cover rounded-md"
+                    />
+                  </div>
+                )}
+                <input
+                  type="text"
+                  name="videoUrl"
+                  placeholder="Video Url"
+                  value={form.videoUrl}
+                  onChange={(e) => {
+                    setForm((preState) => ({
+                      ...preState,
+                      videoUrl: e.target.value,
+                    }));
+                  }}
+                  className="w-full rounded-md py-2.5 px-4 border text-sm outline-[#007bff]"
+                />
+                <input
+                  type="text"
+                  name="audioUrl"
+                  placeholder="Audio Url"
+                  value={form.audioUrl}
+                  onChange={(e) => {
+                    setForm((preState) => ({
+                      ...preState,
+                      audioUrl: e.target.value,
+                    }));
+                  }}
+                  className="w-full rounded-md py-2.5 px-4 border text-sm outline-[#007bff]"
+                />
+                <select
+                  name="videoUrl"
+                  className="w-full rounded-md py-2.5 px-4 border text-sm outline-[#007bff]"
+                  value={form.type}
+                  onChange={(e) => {
+                    setForm((preState) => ({
+                      ...preState,
+                      type: e.target.value,
+                    }));
+                  }}>
+                  <option value="" selected disabled>
+                    Type
+                  </option>
+                  <option value="standard">standard</option>
+                  <option value="video">video</option>
+                  <option value="audio">audio</option>
+                  <option value="gallery">gallery</option>
+                </select>
+                <textarea
+                  placeholder="Description"
+                  rows={6}
+                  name="desc"
+                  value={form.desc}
+                  onChange={(e) => {
+                    setForm((preState) => ({
+                      ...preState,
+                      desc: e.target.value,
+                    }));
+                  }}
+                  className="w-full rounded-md px-4 border text-sm pt-2.5 outline-[#007bff]"></textarea>
+                <CKEditor
+                  editor={ClassicEditor}
+                  config={{
+                    toolbar: [
+                      "heading",
+                      "|",
+                      "bold",
+                      "italic",
+                      "link",
+                      "bulletedList",
+                      "numberedList",
+                      "blockQuote",
+                    ],
+                    heading: {
+                      options: [
+                        {
+                          model: "paragraph",
+                          title: "Paragraph",
+                          class: "ck-heading_paragraph",
+                        },
+                        {
+                          model: "heading1",
+                          view: "h1",
+                          title: "Heading 1",
+                          class: "ck-heading_heading1",
+                        },
+                        {
+                          model: "heading2",
+                          view: "h2",
+                          title: "Heading 2",
+                          class: "ck-heading_heading2",
+                        },
+                      ],
+                    },
+                  }}
+                  data={form.content}
+                  onReady={(editor) => {
+                    console.log("Editor is ready to use!", editor);
+                  }}
+                  onChange={(event, editor) => {
+                    const data = editor.getData();
+                    setForm((preState) => ({ ...preState, content: data }));
+                  }}
+                />
+                <FormInputMedia
+                  required
+                  uploadMultiple
+                  showPreview
+                  buttonLabel="Upload Gallery Images"
+                  accept="image/*"
+                  onChange={(val) => {
+                    const images: any[] = val;
+                    setForm((preState) => ({
+                      ...preState,
+                      galleryImage: [...preState.galleryImage, ...images],
+                    }));
+                  }}
+                />
+                <div className="mt-[31px] grid max-w-[670px] grid-cols-[repeat(auto-fill,_minmax(130px,_1fr))] gap-[5px]">
+                  {form.galleryImage.map((item, idx) => {
+                    return (
+                      <div
+                        key={idx}
+                        className="relative h-[144px] w-[130px] rounded-md first:col-span-2 first:row-span-2 first:h-[293px] first:w-[265px]">
+                        <img
+                          src={process.env.REACT_APP_BE_URL + item.url}
+                          alt=""
+                          className="h-full w-full object-cover rounded-md"
+                        />
+                        <div className="el-dropdown absolute right-[14px] top-[17px] h-1.5 w-6">
+                          <Dropdown
+                            list={[
+                              {
+                                id: 1,
+                                name: "Delete Image",
+                                onClick: () => {
+                                  handleDeleteImage(idx);
+                                },
+                              },
+                            ]}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <button
+                  type="submit"
+                  className="text-white bg-[#007bff] hover:bg-blue-600 font-semibold rounded-md text-sm px-4 py-2.5 w-full">
+                  Send
+                </button>
+              </form>
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 mt-8 lg:mt-10">
+              {pageData?.news?.map((post: PostDataType) => (
+                <Card11 key={post.id} post={post} />
+              ))}
+            </div>
+          )}
+          {user?.username === slug && !id && tabActive !== "Create News" && (
+            <div className="flex flex-col">
+              <div className="overflow-x-auto sm:mx-0.5 lg:mx-0.5">
+                <div className="py-2 inline-block min-w-full mt-5">
+                  <div className="overflow-hidden">
+                    <table className="min-w-full">
+                      <thead className="bg-gray-200 border-b">
+                        <tr>
+                          <th
+                            scope="col"
+                            className="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+                            #
+                          </th>
+                          <th
+                            scope="col"
+                            className="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+                            Title
+                          </th>
+                          <th
+                            scope="col"
+                            className="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+                            Type
+                          </th>
+                          <th
+                            scope="col"
+                            className="text-sm font-medium text-gray-900 px-6 py-4 text-left">
+                            Action
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pageData.news.map(
+                          (item: PostDataType, idx: number) => (
+                            <tr
+                              key={idx}
+                              className="bg-white border-b transition duration-300 ease-in-out hover:bg-gray-100">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {idx + 1}
+                              </td>
+                              <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                                {item.title}
+                              </td>
+                              <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                                {item.postType}
+                              </td>
+                              <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                                <div onClick={() => {
+                                  navigate(`/author/${slug}/news/${item.id}`)
+                                  setTabActive("")
+                                }}>
+                                  <svg className="w-6 h-6"
+                                    width="64px"
+                                    height="64px"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <g
+                                      id="SVGRepo_bgCarrier"
+                                      stroke-width="0"></g>
+                                    <g
+                                      id="SVGRepo_tracerCarrier"
+                                      stroke-linecap="round"
+                                      stroke-linejoin="round"></g>
+                                    <g id="SVGRepo_iconCarrier">
+                                      {" "}
+                                      <path
+                                        d="M21.2799 6.40005L11.7399 15.94C10.7899 16.89 7.96987 17.33 7.33987 16.7C6.70987 16.07 7.13987 13.25 8.08987 12.3L17.6399 2.75002C17.8754 2.49308 18.1605 2.28654 18.4781 2.14284C18.7956 1.99914 19.139 1.92124 19.4875 1.9139C19.8359 1.90657 20.1823 1.96991 20.5056 2.10012C20.8289 2.23033 21.1225 2.42473 21.3686 2.67153C21.6147 2.91833 21.8083 3.21243 21.9376 3.53609C22.0669 3.85976 22.1294 4.20626 22.1211 4.55471C22.1128 4.90316 22.0339 5.24635 21.8894 5.5635C21.7448 5.88065 21.5375 6.16524 21.2799 6.40005V6.40005Z"
+                                        stroke="#000000"
+                                        stroke-width="1.5"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"></path>{" "}
+                                      <path
+                                        d="M11 4H6C4.93913 4 3.92178 4.42142 3.17163 5.17157C2.42149 5.92172 2 6.93913 2 8V18C2 19.0609 2.42149 20.0783 3.17163 20.8284C3.92178 21.5786 4.93913 22 6 22H17C19.21 22 20 20.2 20 18V13"
+                                        stroke="#000000"
+                                        stroke-width="1.5"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"></path>{" "}
+                                    </g>
+                                  </svg>
+                                </div>
+                              </td>
+                            </tr>
+                          )
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </main>
+        {tabActive !== "Create News" && (
+          <Fragment>
+            <SectionSliderNewAuthors
+              heading="Top elite authors"
+              subHeading="Discover our elite writers"
+              authors={authors}
+            />
 
-        {/* === SECTION 5 === */}
-        <SectionSliderNewAuthors
-          heading="Top elite authors"
-          subHeading="Discover our elite writers"
-          // authors={DEMO_AUTHORS.filter((_, i) => i < 10)}
-          authors={authors}
-        />
-
-        {/* SUBCRIBES */}
-        <SectionSubscribe2 />
+            <SectionSubscribe2 />
+          </Fragment>
+        )}
       </div>
     </div>
   );

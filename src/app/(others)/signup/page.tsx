@@ -30,15 +30,27 @@ const PageSignUp = () => {
           className="grid grid-cols-1 gap-6"
           onSubmit={(e) => {
             e.preventDefault();
+            let username = form.email;
+            let usernameMatch = form.email.match(/^([^@]*)@/);
+            if (usernameMatch) {
+              username = usernameMatch[1];
+            }
             api
               .post("auth/local/register", {
-                username: form.email,
+                username,
                 email: form.email,
                 password: form.password,
               })
               .then((res) => {
                 const { user, jwt } = res;
                 setUser({ ...user, jwt });
+                api.post('authors', {
+                  data: {
+                    displayName: username,
+                    slug: username,
+                    user: {connect: [{id: user.id}]},
+                  }
+                })
                 navigate("/");
               })
               .catch((err) => {
