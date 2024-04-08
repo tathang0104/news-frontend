@@ -44,7 +44,7 @@ const api = {
   },
   delete: async (endpoint, params = {}) => {
     try {
-      const response = await apiService.put(endpoint, { ...params });
+      const response = await apiService.delete(endpoint, { ...params });
       return response.data;
     } catch (error) {
       throw error;

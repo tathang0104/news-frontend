@@ -12,6 +12,7 @@ import Page404 from "app/not-found";
 import PageLogin from "app/(others)/login/page";
 import PageSignUp from "app/(others)/signup/page";
 import SiteHeader from "app/SiteHeader";
+import PageAuthorEdit from "app/author/edit";
 
 export const pages: Page[] = [
   { path: "/", component: PageHome },
@@ -24,6 +25,7 @@ export const pages: Page[] = [
   { path: "/author/:slug/saved", component: PageAuthor },
   { path: "/author/:slug/create-news", component: PageAuthor },
   { path: "/author/:slug/news/:id", component: PageAuthor },
+  { path: "/author/:slug/edit-profile", component: PageAuthorEdit },
 
   // single page -------------------------------------------------------
   { path: "/single/:slug", component: PageSingle },

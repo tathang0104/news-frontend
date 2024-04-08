@@ -63,6 +63,13 @@ const PageAuthor = () => {
         navigate(`/author/${slug}/create-news`)
       },
     },
+    {
+      name: "Edit Profile",
+      handle: () => {
+        setForm(initForm)
+        navigate(`/author/${slug}/edit-profile`)
+      },
+    },
   ];
   const TAB2 = [
     {
@@ -82,13 +89,15 @@ const PageAuthor = () => {
       setForm((preState) => ({ ...preState, galleryImage: newImages }));
     }
   };
-  console.log(slug === user?.username);
 
   useEffect(() => {
     api
       .get("authors", {
         populate: {
           avatar: {
+            fields: ["url", "name"],
+          },
+          bgImage: {
             fields: ["url", "name"],
           },
           news: {
@@ -160,13 +169,15 @@ const PageAuthor = () => {
               avatar:
                 process.env.REACT_APP_BE_URL +
                 attributes?.avatar?.data?.attributes?.url,
+              bgImage:
+                process.env.REACT_APP_BE_URL +
+                attributes?.bgImage?.data?.attributes?.url,
               href: "/author/" + attributes?.slug,
             };
           }
         );
         const [author] = dataAuthor;
         const news = formatDataNews(author.news.data);
-        console.log(news);
         setPageData({ ...author, news });
       });
   }, [slug, id]);
@@ -258,7 +269,7 @@ const PageAuthor = () => {
   };
 
   if (!pageData) return <></>;
-  console.log(pageData.news);
+
   return (
     <div className={`nc-PageAuthor `}>
       {/* HEADER */}
@@ -268,7 +279,8 @@ const PageAuthor = () => {
             alt=""
             containerClassName="absolute inset-0"
             sizes="(max-width: 1280px) 100vw, 1536px"
-            src="https://images.pexels.com/photos/459225/pexels-photo-459225.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260"
+            // src="https://images.pexels.com/photos/459225/pexels-photo-459225.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260"
+            src={pageData?.bgImage}
             className="object-cover w-full h-full"
             fill
           />
@@ -349,7 +361,7 @@ const PageAuthor = () => {
                       data: {
                         ...form,
                       },
-                    })
+                    });
                   } else {
                     api
                       .post("news", {
@@ -607,12 +619,15 @@ const PageAuthor = () => {
                               <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
                                 {item.postType}
                               </td>
-                              <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-                                <div onClick={() => {
-                                  navigate(`/author/${slug}/news/${item.id}`)
-                                  setTabActive("")
-                                }}>
-                                  <svg className="w-6 h-6"
+                              <td className="text-sm flex gap-4 text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                                <div
+                                  className="cursor-pointer"
+                                  onClick={() => {
+                                    navigate(`/author/${slug}/news/${item.id}`);
+                                    setTabActive("");
+                                  }}>
+                                  <svg
+                                    className="w-6 h-6"
                                     width="64px"
                                     height="64px"
                                     viewBox="0 0 24 24"
@@ -637,6 +652,68 @@ const PageAuthor = () => {
                                         d="M11 4H6C4.93913 4 3.92178 4.42142 3.17163 5.17157C2.42149 5.92172 2 6.93913 2 8V18C2 19.0609 2.42149 20.0783 3.17163 20.8284C3.92178 21.5786 4.93913 22 6 22H17C19.21 22 20 20.2 20 18V13"
                                         stroke="#000000"
                                         stroke-width="1.5"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"></path>{" "}
+                                    </g>
+                                  </svg>
+                                </div>
+                                <div
+                                  className="cursor-pointer"
+                                  onClick={() => {
+                                    api
+                                      .delete(`/news/${item.id}`)
+                                      .then((res) => {
+                                        setPageData({
+                                          ...pageData,
+                                          news: pageData.news.filter((_i: any) => _i.id !== item.id),
+                                        });
+                                      });
+                                  }}>
+                                  {" "}
+                                  <svg
+                                    className="w-6 h-6"
+                                    width="64px"
+                                    height="64px"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <g
+                                      id="SVGRepo_bgCarrier"
+                                      stroke-width="0"></g>
+                                    <g
+                                      id="SVGRepo_tracerCarrier"
+                                      stroke-linecap="round"
+                                      stroke-linejoin="round"></g>
+                                    <g id="SVGRepo_iconCarrier">
+                                      {" "}
+                                      <path
+                                        d="M10 11V17"
+                                        stroke="#000000"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"></path>{" "}
+                                      <path
+                                        d="M14 11V17"
+                                        stroke="#000000"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"></path>{" "}
+                                      <path
+                                        d="M4 7H20"
+                                        stroke="#000000"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"></path>{" "}
+                                      <path
+                                        d="M6 7H12H18V18C18 19.6569 16.6569 21 15 21H9C7.34315 21 6 19.6569 6 18V7Z"
+                                        stroke="#000000"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"></path>{" "}
+                                      <path
+                                        d="M9 5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 5V7H9V5Z"
+                                        stroke="#000000"
+                                        stroke-width="2"
                                         stroke-linecap="round"
                                         stroke-linejoin="round"></path>{" "}
                                     </g>
