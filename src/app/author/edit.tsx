@@ -91,7 +91,7 @@ const PageAuthorEdit = () => {
       });
   }, [slug]);
 
-  if (!author) return <></>;
+  if (!author || !user) return <></>;
 
   return (
     <div className="container">
