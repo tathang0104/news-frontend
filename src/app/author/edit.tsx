@@ -2,6 +2,7 @@ import api from "app/api";
 import FormInputMedia from "components/FormInputMedia";
 import { AdminContext } from "context/adminContext";
 import React, { useContext, useEffect, useState } from "react";
+import { createGlobalState } from "react-hooks-global-state";
 import { useNavigate, useParams } from "react-router-dom";
 
 interface IAuthor {
@@ -69,25 +70,28 @@ const PageAuthorEdit = () => {
       })
       .then((res) => {
         const { data } = res;
-        const [author] = data;
-        const {id, attributes } = author;
+        const [authorData] = data;
+        const {id, attributes } = authorData;
+        
         const { avatar: {data: avatar}, bgImage: {data: bgImage} } = attributes;
         setAuthor({
           id,
           attributes: {
             ...attributes,
             avatar: {
-              id: avatar.id,
-              url: avatar.attributes.url,
-              name: avatar.attributes.name,
+              id: avatar?.id,
+              url: avatar?.attributes.url,
+              name: avatar?.attributes.name,
             },
             bgImage: {
-              id: bgImage.id,
-              url: bgImage.attributes.url,
-              name: bgImage.attributes.name,
+              id: bgImage?.id,
+              url: bgImage?.attributes.url,
+              name: bgImage?.attributes.name,
             },
           }
         })
+      }).catch((err) => {
+        console.log(err.messgae);
       });
   }, [slug]);
 
@@ -116,7 +120,7 @@ const PageAuthorEdit = () => {
               navigate(`/author/${slug}`);
             })
             .catch((err) => {
-              console.log(err);
+              console.log(err.messgae);
             });
         }}
         className="ml-auo space-y-4 mt-4 flex flex-col">
